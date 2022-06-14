@@ -1,17 +1,10 @@
 // Dependencies
-// const fs = require("fs");
-// const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
-// const app = express();
 const cTable = require("console.table");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 3001;
-
-// // Express middleware
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
 
 // Connect to database
 
@@ -47,7 +40,7 @@ function start() {
     .then((userChoice) => {
       switch (userChoice.list) {
         case "View All Employees":
-          let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title, department.name, role.salary, employee.manager_id FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id ORDER BY employee.id ASC;`;
+          let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title, department.name, role.salary, CONCAT(manager.first_name , ' ' , manager.last_name) as "manager" FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id LEFT JOIN employee manager ON employee.manager_id = manager.id ORDER BY employee.id ASC;`;
           db.query(sql, (err, result) => {
             if (err) {
               console.log(err);
