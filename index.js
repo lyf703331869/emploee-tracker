@@ -1,5 +1,5 @@
 // Dependencies
-const fs = require("fs");
+// const fs = require("fs");
 const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
@@ -52,12 +52,49 @@ function start() {
             if (err) {
               console.log(err);
             }
+            console.log("\n");
             console.table(result);
             start();
           });
           break;
         case "View All Employees By Department":
-          start();
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "department",
+                message:
+                  "Which department would you like to see employees for?",
+                default: "Use arrow keys",
+                choices: ["Sales", "Engineering", "Finance", "Legal"],
+              },
+            ])
+            .then((userChoice) => {
+              let depId;
+              switch (userChoice.department) {
+                case "Sales":
+                  depId = 1;
+                  break;
+                case "Engineering":
+                  depId = 2;
+                  break;
+                case "Finance":
+                  depId = 3;
+                  break;
+                case "Legal":
+                  depId = 4;
+                  break;
+              }
+              let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && role.department_id=?;`;
+              db.query(sql, depId, (err, result) => {
+                if (err) {
+                  console.log(err);
+                }
+                console.log("\n");
+                console.table(result);
+                start();
+              });
+            });
           break;
         case "View All Employees By Manager":
           start();
