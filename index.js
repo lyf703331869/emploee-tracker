@@ -1,17 +1,17 @@
 // Dependencies
 // const fs = require("fs");
-const express = require("express");
+// const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
-const app = express();
+// const app = express();
 const cTable = require("console.table");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 3001;
 
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// // Express middleware
+// app.use(express.urlencoded({ extended: false }));
+// app.use(express.json());
 
 // Connect to database
 
