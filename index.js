@@ -228,16 +228,72 @@ function start() {
         case "View All Role":
           db.query(
             "SELECT role.id, role.title, department.name as department, role.salary FROM role JOIN department ON role.department_id = department.id",
-            (err, results) => {
+            (err, result) => {
               if (err) throw err;
               console.log("\n");
-              console.table(results);
+              console.table(result);
               start();
             }
           );
           break;
         case "Add Role":
-          start();
+          db.query("SELECT * FROM department;", (err, depRes) => {
+            if (err) throw err;
+            let depOptions = [];
+            for (let i = 0; i < depRes.length; i++) {
+              depOptions.push(depRes[i].name);
+            }
+            inquirer
+              .prompt([
+                {
+                  type: "input",
+                  name: "title",
+                  message: "What is the role's title?",
+                  validate: (response) => {
+                    if (response) {
+                      return true;
+                    } else {
+                      console.log("Cannot be blank.");
+                    }
+                  },
+                },
+                {
+                  type: "input",
+                  name: "salary",
+                  message: "What is the role's salary?",
+                  validate: (response) => {
+                    if (response) {
+                      return true;
+                    } else {
+                      console.log("Cannot be blank.");
+                    }
+                  },
+                },
+                {
+                  type: "list",
+                  name: "department",
+                  message: "What is the role's department?",
+                  default: "Use arrow keys",
+                  choices: depOptions,
+                },
+              ])
+              .then((userChoice) => {
+                let depId;
+                for (let i = 0; i < depRes.length; i++) {
+                  if (depRes[i].name === userChoice.department) {
+                    depId = depRes[i].id;
+                  }
+                }
+                db.query(
+                  `INSERT INTO role (title, salary, department_id) VALUES ("${userChoice.title}", "${userChoice.salary}",${depId})`,
+                  (err) => {
+                    if (err) throw err;
+                    console.log("New role has been added!");
+                    start();
+                  }
+                );
+              });
+          });
           break;
         case "Remove Role":
           start();
