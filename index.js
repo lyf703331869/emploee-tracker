@@ -2,12 +2,22 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const cTable = require("console.table");
+const figlet = require("figlet");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 3001;
 
-// Connect to database
+console.log(
+  figlet.textSync("\nEmployee\nTracker", {
+    font: "Ghost",
+    horizontalLayout: "default",
+    verticalLayout: "default",
+    width: 100,
+    whitespaceBreak: true,
+  })
+);
 
+// Connect to database
 const db = mysql.createConnection(
   {
     host: "localhost",
