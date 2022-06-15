@@ -90,7 +90,42 @@ function start() {
             });
           break;
         case "View All Employees By Manager":
-          start();
+          let sqlQuery = `SELECT employee.id, employee.first_name, employee.last_name FROM employee`;
+          let fullName = [];
+          db.query(sqlQuery, function (err, res) {
+            res.map((element, i) => {
+              fullName.push(element.first_name + " " + element.last_name);
+            });
+            if (err) throw err;
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  name: "manager",
+                  message:
+                    "Which employee do you want to see direct reports for?",
+                  default: "Use arrow keys",
+                  choices: fullName,
+                },
+              ])
+              .then((userChoice) => {
+                for (let i = 0; i < res.length; i++) {
+                  let resFullName = res[i].first_name + " " + res[i].last_name;
+                  if (resFullName == userChoice.manager) {
+                    let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && employee.manager_id = ?;`;
+                    db.query(sql, res[i].id, (err, result) => {
+                      if (err) {
+                        console.log(err);
+                      }
+                      console.log("\n");
+                      console.table(result);
+                      start();
+                    });
+                    return;
+                  }
+                }
+              });
+          });
           break;
         case "Add Employee":
           start();
