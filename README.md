@@ -38,7 +38,7 @@
 
   ## Tutorial
 
-  Please see the video demo (here)[https://www.youtube.com/watch?v=cAT6a5BAMgA]
+  Please see the video demo [here](https://www.youtube.com/watch?v=cAT6a5BAMgA)
   
   ## Questions
   
