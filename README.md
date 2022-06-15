@@ -40,6 +40,8 @@
 
   Please see the video demo [here](https://www.youtube.com/watch?v=cAT6a5BAMgA)
   
+  <img width="1209" alt="image" src="https://user-images.githubusercontent.com/103960619/173942553-08e2cccf-6926-4b7c-a4b8-94cdf579a127.png">
+  
   ## Questions
   
   If you have any questions, please feel free to reach out to me via:
