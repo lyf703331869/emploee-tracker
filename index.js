@@ -131,8 +131,8 @@ function start() {
                 for (let i = 0; i < res.length; i++) {
                   let resFullName = res[i].first_name + " " + res[i].last_name;
                   if (resFullName === userChoice.manager) {
-                    let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && employee.manager_id = ?;`;
-                    db.query(sql, res[i].id, (err, result) => {
+                    let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && employee.manager_id = ${res[i].id} && employee.id != ${res[i].id};`;
+                    db.query(sql, (err, result) => {
                       if (err) {
                         console.log(err);
                       }
