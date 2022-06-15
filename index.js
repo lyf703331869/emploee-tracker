@@ -307,7 +307,31 @@ function start() {
           });
           break;
         case "Add Department":
-          start();
+          inquirer
+            .prompt([
+              {
+                type: "input",
+                name: "name",
+                message: "What is the department's name?",
+                validate: (response) => {
+                  if (response) {
+                    return true;
+                  } else {
+                    console.log("Cannot be blank.");
+                  }
+                },
+              },
+            ])
+            .then((userChoice) => {
+              db.query(
+                `INSERT INTO department (name) VALUES ("${userChoice.name}")`,
+                (err) => {
+                  if (err) throw err;
+                  console.log("New department has been added!");
+                  start();
+                }
+              );
+            });
           break;
         case "Remove Department":
           start();
