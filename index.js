@@ -33,14 +33,21 @@ function start() {
           "Add Employee",
           "Remove Employee",
           "Update Employee Role",
-          "Update Employee Manager",
+          "View All Role",
+          "Add Role",
+          "Remove Role",
+          "View All Department",
+          "Add Department",
+          "Remove Department",
+          "View The Total Utilized Budget Of A Department",
+          "Quit",
         ],
       },
     ])
     .then((userChoice) => {
       switch (userChoice.list) {
         case "View All Employees":
-          let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title, department.name, role.salary, CONCAT(manager.first_name , ' ' , manager.last_name) as "manager" FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id LEFT JOIN employee manager ON employee.manager_id = manager.id ORDER BY employee.id ASC;`;
+          let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title, department.name as department, role.salary, CONCAT(manager.first_name , ' ' , manager.last_name) as "manager" FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id LEFT JOIN employee manager ON employee.manager_id = manager.id ORDER BY employee.id ASC;`;
           db.query(sql, (err, result) => {
             if (err) {
               console.log(err);
@@ -93,10 +100,11 @@ function start() {
           let sqlQuery = `SELECT employee.id, employee.first_name, employee.last_name FROM employee`;
           let fullName = [];
           db.query(sqlQuery, function (err, res) {
+            if (err) throw err;
             res.map((element, i) => {
               fullName.push(element.first_name + " " + element.last_name);
             });
-            if (err) throw err;
+
             inquirer
               .prompt([
                 {
@@ -111,7 +119,7 @@ function start() {
               .then((userChoice) => {
                 for (let i = 0; i < res.length; i++) {
                   let resFullName = res[i].first_name + " " + res[i].last_name;
-                  if (resFullName == userChoice.manager) {
+                  if (resFullName === userChoice.manager) {
                     let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && employee.manager_id = ?;`;
                     db.query(sql, res[i].id, (err, result) => {
                       if (err) {
@@ -128,7 +136,88 @@ function start() {
           });
           break;
         case "Add Employee":
-          start();
+          db.query("SELECT * FROM role", (err, roleRes) => {
+            if (err) throw err;
+            let roleOptions = [];
+            for (let i = 0; i < roleRes.length; i++) {
+              roleOptions.push(roleRes[i].title);
+            }
+            db.query("SELECT * FROM employee", (err, empRes) => {
+              if (err) throw err;
+              let empOptions = [];
+              for (let i = 0; i < empRes.length; i++) {
+                empOptions.push(
+                  empRes[i].first_name + " " + empRes[i].last_name
+                );
+              }
+              inquirer
+                .prompt([
+                  {
+                    type: "input",
+                    name: "firstName",
+                    message: "What is the employee's first name?",
+                    validate: (response) => {
+                      if (response) {
+                        return true;
+                      } else {
+                        console.log("Cannot be blank.");
+                      }
+                    },
+                  },
+                  {
+                    type: "input",
+                    name: "lastName",
+                    message: "What is the employee's last name?",
+                    validate: (response) => {
+                      if (response) {
+                        return true;
+                      } else {
+                        console.log("Cannot be blank.");
+                      }
+                    },
+                  },
+                  {
+                    type: "list",
+                    name: "role",
+                    message: "What is the employee's role?",
+                    default: "Use arrow keys",
+                    choices: roleOptions,
+                  },
+                  {
+                    type: "list",
+                    name: "manager",
+                    message: "What is the employee's manager?",
+                    default: "Use arrow keys",
+                    choices: empOptions,
+                  },
+                ])
+                .then((userChoice) => {
+                  let roleId;
+                  for (let i = 0; i < roleRes.length; i++) {
+                    if (roleRes[i].title === userChoice.role) {
+                      roleId = roleRes[i].id;
+                    }
+                  }
+                  let managerId;
+                  for (let i = 0; i < empRes.length; i++) {
+                    if (
+                      `${empRes[i].first_name} ${empRes[i].last_name}` ===
+                      userChoice.manager
+                    ) {
+                      managerId = empRes[i].id;
+                    }
+                  }
+                  db.query(
+                    `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${userChoice.firstName}", "${userChoice.lastName}",${roleId}, ${managerId})`,
+                    (err) => {
+                      if (err) throw err;
+                      console.log("New employee has been added!");
+                      start();
+                    }
+                  );
+                });
+            });
+          });
           break;
         case "Remove Employee":
           start();
@@ -136,8 +225,43 @@ function start() {
         case "Update Employee Role":
           start();
           break;
-        default:
+        case "View All Role":
+          db.query(
+            "SELECT role.id, role.title, department.name as department, role.salary FROM role JOIN department ON role.department_id = department.id",
+            (err, results) => {
+              if (err) throw err;
+              console.log("\n");
+              console.table(results);
+              start();
+            }
+          );
+          break;
+        case "Add Role":
           start();
+          break;
+        case "Remove Role":
+          start();
+          break;
+        case "View All Department":
+          db.query("SELECT * FROM department", (err, result) => {
+            if (err) throw err;
+            console.log("\n");
+            console.table(result);
+            start();
+          });
+          break;
+        case "Add Department":
+          start();
+          break;
+        case "Remove Department":
+          start();
+          break;
+        case "View The Total Utilized Budget Of A Department":
+          start();
+          break;
+        case "Quit":
+          console.log("Goodbye!");
+          process.exit();
       }
     });
 }
