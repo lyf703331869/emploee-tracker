@@ -212,7 +212,7 @@ function start() {
                     `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${userChoice.firstName}", "${userChoice.lastName}",${roleId}, ${managerId})`,
                     (err) => {
                       if (err) throw err;
-                      console.log("New employee has been added!");
+                      console.log("\nNew employee has been added!\n");
                       start();
                     }
                   );
@@ -248,7 +248,7 @@ function start() {
                 }
                 db.query("DELETE FROM employee WHERE id = ?", empId, (err) => {
                   if (err) throw err;
-                  console.log("Employee has been removed!");
+                  console.log("\nEmployee has been removed!\n");
                   start();
                 });
               });
@@ -285,6 +285,13 @@ function start() {
                     default: "Use arrow keys",
                     choices: roleOptions,
                   },
+                  {
+                    type: "list",
+                    name: "manager",
+                    message: "What is the employee's manager now?",
+                    default: "Use arrow keys",
+                    choices: empOptions,
+                  },
                 ])
                 .then((userChoice) => {
                   let empId;
@@ -301,11 +308,20 @@ function start() {
                       roleId = roleRes[i].id;
                     }
                   }
+                  let managerId;
+                  for (let i = 0; i < empRes.length; i++) {
+                    if (
+                      `${empRes[i].first_name} ${empRes[i].last_name}` ===
+                      userChoice.manager
+                    ) {
+                      managerId = empRes[i].id;
+                    }
+                  }
                   db.query(
-                    `UPDATE employee SET role_id = ${roleId} WHERE id = ${empId}`,
+                    `UPDATE employee SET role_id = ${roleId}, manager_id = ${managerId} WHERE id = ${empId}`,
                     (err) => {
                       if (err) throw err;
-                      console.log("Employee has been removed!");
+                      console.log("\nEmployee has been updated!\n");
                       start();
                     }
                   );
@@ -376,7 +392,7 @@ function start() {
                   `INSERT INTO role (title, salary, department_id) VALUES ("${userChoice.title}", "${userChoice.salary}",${depId})`,
                   (err) => {
                     if (err) throw err;
-                    console.log("New role has been added!");
+                    console.log("\nNew role has been added!\n");
                     start();
                   }
                 );
@@ -411,7 +427,7 @@ function start() {
                 }
                 db.query("DELETE FROM role WHERE id = ?", roleId, (err) => {
                   if (err) throw err;
-                  console.log("Role has been removed!");
+                  console.log("\nRole has been removed!\n");
                   start();
                 });
               });
@@ -459,7 +475,7 @@ function start() {
                   `UPDATE role SET salary = ${userChoice.salary} WHERE id = ${roleId}`,
                   (err) => {
                     if (err) throw err;
-                    console.log("Role has been updated!");
+                    console.log("\nRole salary has been updated!\n");
                     start();
                   }
                 );
@@ -495,7 +511,7 @@ function start() {
                 `INSERT INTO department (name) VALUES ("${userChoice.name}")`,
                 (err) => {
                   if (err) throw err;
-                  console.log("New department has been added!");
+                  console.log("\nNew department has been added!\n");
                   start();
                 }
               );
@@ -530,7 +546,7 @@ function start() {
                   depId,
                   (err) => {
                     if (err) throw err;
-                    console.log("Department has been removed!");
+                    console.log("\nDepartment has been removed!\n");
                     start();
                   }
                 );
@@ -538,7 +554,41 @@ function start() {
           });
           break;
         case "View The Total Utilized Budget Of A Department":
-          start();
+          db.query("SELECT * FROM department", (err, depRes) => {
+            if (err) throw err;
+            let depOptions = [];
+            for (let i = 0; i < depRes.length; i++) {
+              depOptions.push(depRes[i].name);
+            }
+            let sql = `SELECT employee.id, department.name as department, role.salary FROM department JOIN role ON department.id = role.department_id JOIN employee ON role.id = employee.role_id ORDER BY employee.id ASC;`;
+            db.query(sql, (err, BudRes) => {
+              if (err) {
+                console.log(err);
+              }
+              inquirer
+                .prompt([
+                  {
+                    type: "list",
+                    name: "department",
+                    message: "Which department do you want to check?",
+                    default: "Use arrow keys",
+                    choices: depOptions,
+                  },
+                ])
+                .then((userChoice) => {
+                  let totalBudget = 0;
+                  for (let i = 0; i < BudRes.length; i++) {
+                    if (BudRes[i].department === userChoice.department) {
+                      totalBudget += parseInt(BudRes[i].salary);
+                    }
+                  }
+                  console.log(
+                    `\nThis department total utilized budget is $${totalBudget}.\n`
+                  );
+                  start();
+                });
+            });
+          });
           break;
         case "Quit":
           console.log("Goodbye!");
