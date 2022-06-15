@@ -220,7 +220,41 @@ function start() {
           });
           break;
         case "Remove Employee":
-          start();
+          db.query("SELECT * FROM employee", (err, empRes) => {
+            if (err) throw err;
+            let empOptions = [];
+            for (let i = 0; i < empRes.length; i++) {
+              empOptions.push(empRes[i].first_name + " " + empRes[i].last_name);
+            }
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  name: "employee",
+                  message: "Which employee do you want to remove?",
+                  default: "Use arrow keys",
+                  choices: empOptions,
+                },
+              ])
+              .then((userChoice) => {
+                let empId;
+                let empName;
+                for (let i = 0; i < empRes.length; i++) {
+                  empName = empRes[i].first_name + " " + empRes[i].last_name;
+                  if (empName === userChoice.employee) {
+                    empId = empRes[i].id;
+                  }
+                }
+                db.query(
+                  "DELETE FROM employee WHERE id = ?",
+                  empId,
+                  (err, empRes) => {
+                    if (err) throw err;
+                    start();
+                  }
+                );
+              });
+          });
           break;
         case "Update Employee Role":
           start();
