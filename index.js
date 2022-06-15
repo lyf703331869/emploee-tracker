@@ -245,14 +245,11 @@ function start() {
                     empId = empRes[i].id;
                   }
                 }
-                db.query(
-                  "DELETE FROM employee WHERE id = ?",
-                  empId,
-                  (err, empRes) => {
-                    if (err) throw err;
-                    start();
-                  }
-                );
+                db.query("DELETE FROM employee WHERE id = ?", empId, (err) => {
+                  if (err) throw err;
+                  console.log("Role has been removed!");
+                  start();
+                });
               });
           });
           break;
@@ -368,7 +365,40 @@ function start() {
             });
           break;
         case "Remove Department":
-          start();
+          db.query("SELECT * FROM department", (err, depRes) => {
+            if (err) throw err;
+            let depOptions = [];
+            for (let i = 0; i < depRes.length; i++) {
+              depOptions.push(depRes[i].name);
+            }
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  name: "department",
+                  message: "Which department do you want to remove?",
+                  default: "Use arrow keys",
+                  choices: depOptions,
+                },
+              ])
+              .then((userChoice) => {
+                let depId;
+                for (let i = 0; i < depRes.length; i++) {
+                  if (depRes[i].name === userChoice.department) {
+                    depId = depRes[i].id;
+                  }
+                }
+                db.query(
+                  "DELETE FROM department WHERE id = ?",
+                  depId,
+                  (err) => {
+                    if (err) throw err;
+                    console.log("Department has been removed!");
+                    start();
+                  }
+                );
+              });
+          });
           break;
         case "View The Total Utilized Budget Of A Department":
           start();
