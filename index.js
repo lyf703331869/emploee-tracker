@@ -254,7 +254,63 @@ function start() {
           });
           break;
         case "Update Employee Role":
-          start();
+          db.query("SELECT * FROM role", (err, roleRes) => {
+            if (err) throw err;
+            let roleOptions = [];
+            for (let i = 0; i < roleRes.length; i++) {
+              roleOptions.push(roleRes[i].title);
+            }
+            db.query("SELECT * FROM employee", (err, empRes) => {
+              if (err) throw err;
+              let empOptions = [];
+              for (let i = 0; i < empRes.length; i++) {
+                empOptions.push(
+                  empRes[i].first_name + " " + empRes[i].last_name
+                );
+              }
+              inquirer
+                .prompt([
+                  {
+                    type: "list",
+                    name: "employee",
+                    message: "Which employee do you want to update?",
+                    default: "Use arrow keys",
+                    choices: empOptions,
+                  },
+                  {
+                    type: "list",
+                    name: "role",
+                    message: "Which role you want to assign this employee to?",
+                    default: "Use arrow keys",
+                    choices: roleOptions,
+                  },
+                ])
+                .then((userChoice) => {
+                  let empId;
+                  let empName;
+                  for (let i = 0; i < empRes.length; i++) {
+                    empName = empRes[i].first_name + " " + empRes[i].last_name;
+                    if (empName === userChoice.employee) {
+                      empId = empRes[i].id;
+                    }
+                  }
+                  let roleId;
+                  for (let i = 0; i < roleRes.length; i++) {
+                    if (roleRes[i].title === userChoice.role) {
+                      roleId = roleRes[i].id;
+                    }
+                  }
+                  db.query(
+                    `UPDATE employee SET role_id = ${roleId} WHERE id = ${empId}`,
+                    (err) => {
+                      if (err) throw err;
+                      console.log("Employee has been removed!");
+                      start();
+                    }
+                  );
+                });
+            });
+          });
           break;
         case "View All Role":
           db.query(
@@ -429,16 +485,6 @@ function start() {
                   }
                 );
               });
-            // .then((userChoice) => {
-            //   db.query(
-            //     `DELETE FROM department WHERE name = "${userChoice.department}"?`,
-            //     (err) => {
-            //       if (err) throw err;
-            //       console.log("Department has been removed!");
-            //       start();
-            //     }
-            //   );
-            // });
           });
           break;
         case "View The Total Utilized Budget Of A Department":
