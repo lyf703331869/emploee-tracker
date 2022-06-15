@@ -36,6 +36,7 @@ function start() {
           "View All Role",
           "Add Role",
           "Remove Role",
+          "Update Role Salary",
           "View All Department",
           "Add Department",
           "Remove Department",
@@ -413,6 +414,55 @@ function start() {
                   console.log("Role has been removed!");
                   start();
                 });
+              });
+          });
+          break;
+        case "Update Role Salary":
+          db.query("SELECT * FROM role", (err, roleRes) => {
+            if (err) throw err;
+            let roleOptions = [];
+            for (let i = 0; i < roleRes.length; i++) {
+              roleOptions.push(roleRes[i].title);
+            }
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  name: "role",
+                  message: "Which role do you want to update?",
+                  default: "Use arrow keys",
+                  choices: roleOptions,
+                },
+                {
+                  type: "input",
+                  name: "salary",
+                  message: "How much the salary for this role?",
+                  validate: (response) => {
+                    if (response) {
+                      return true;
+                    } else {
+                      console.log("Cannot be blank.");
+                    }
+                  },
+                },
+              ])
+              .then((userChoice) => {
+                let roleId;
+                let roleName;
+                for (let i = 0; i < roleRes.length; i++) {
+                  roleName = roleRes[i].title;
+                  if (roleName === userChoice.role) {
+                    roleId = roleRes[i].id;
+                  }
+                }
+                db.query(
+                  `UPDATE role SET salary = ${userChoice.salary} WHERE id = ${roleId}`,
+                  (err) => {
+                    if (err) throw err;
+                    console.log("Role has been updated!");
+                    start();
+                  }
+                );
               });
           });
           break;
