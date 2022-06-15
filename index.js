@@ -247,7 +247,7 @@ function start() {
                 }
                 db.query("DELETE FROM employee WHERE id = ?", empId, (err) => {
                   if (err) throw err;
-                  console.log("Role has been removed!");
+                  console.log("Employee has been removed!");
                   start();
                 });
               });
@@ -327,7 +327,38 @@ function start() {
           });
           break;
         case "Remove Role":
-          start();
+          db.query("SELECT * FROM role", (err, roleRes) => {
+            if (err) throw err;
+            let roleOptions = [];
+            for (let i = 0; i < roleRes.length; i++) {
+              roleOptions.push(roleRes[i].title);
+            }
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  name: "role",
+                  message: "Which role do you want to remove?",
+                  default: "Use arrow keys",
+                  choices: roleOptions,
+                },
+              ])
+              .then((userChoice) => {
+                let roleId;
+                let roleName;
+                for (let i = 0; i < roleRes.length; i++) {
+                  roleName = roleRes[i].title;
+                  if (roleName === userChoice.role) {
+                    roleId = roleRes[i].id;
+                  }
+                }
+                db.query("DELETE FROM role WHERE id = ?", roleId, (err) => {
+                  if (err) throw err;
+                  console.log("Role has been removed!");
+                  start();
+                });
+              });
+          });
           break;
         case "View All Department":
           db.query("SELECT * FROM department", (err, result) => {
@@ -398,6 +429,16 @@ function start() {
                   }
                 );
               });
+            // .then((userChoice) => {
+            //   db.query(
+            //     `DELETE FROM department WHERE name = "${userChoice.department}"?`,
+            //     (err) => {
+            //       if (err) throw err;
+            //       console.log("Department has been removed!");
+            //       start();
+            //     }
+            //   );
+            // });
           });
           break;
         case "View The Total Utilized Budget Of A Department":
