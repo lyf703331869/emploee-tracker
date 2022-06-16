@@ -69,43 +69,43 @@ function start() {
           });
           break;
         case "View All Employees By Department":
-          inquirer
-            .prompt([
-              {
-                type: "list",
-                name: "department",
-                message:
-                  "Which department would you like to see employees for?",
-                default: "Use arrow keys",
-                choices: ["Sales", "Engineering", "Finance", "Legal"],
-              },
-            ])
-            .then((userChoice) => {
-              let depId;
-              switch (userChoice.department) {
-                case "Sales":
-                  depId = 1;
-                  break;
-                case "Engineering":
-                  depId = 2;
-                  break;
-                case "Finance":
-                  depId = 3;
-                  break;
-                case "Legal":
-                  depId = 4;
-                  break;
-              }
-              let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && role.department_id=?;`;
-              db.query(sql, depId, (err, result) => {
-                if (err) {
-                  console.log(err);
+          db.query("SELECT * FROM department", (err, res) => {
+            if (err) throw err;
+            let depOption = [];
+            for (let i = 0; i < res.length; i++) {
+              depOption.push(res[i].name);
+            }
+            inquirer
+              .prompt([
+                {
+                  type: "list",
+                  name: "department",
+                  message:
+                    "Which department would you like to see employees for?",
+                  default: "Use arrow keys",
+                  choices: depOption,
+                },
+              ])
+              .then((userChoice) => {
+                let depId;
+                let depName;
+                for (let i = 0; i < res.length; i++) {
+                  depName = res[i].name;
+                  if (depName === userChoice.department) {
+                    depId = res[i].id;
+                  }
                 }
-                console.log("\n");
-                console.table(result);
-                start();
+                let sql = `SELECT employee.id, employee.first_name, employee.last_name,role.title FROM role JOIN employee ON role.id = employee.role_id && role.department_id=${depId};`;
+                db.query(sql, depId, (err, result) => {
+                  if (err) {
+                    console.log(err);
+                  }
+                  console.log("\n");
+                  console.table(result);
+                  start();
+                });
               });
-            });
+          });
           break;
         case "View All Employees By Manager":
           let sqlQuery = `SELECT employee.id, employee.first_name, employee.last_name FROM employee`;
